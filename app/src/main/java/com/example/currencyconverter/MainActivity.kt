@@ -2,22 +2,11 @@ package com.example.currencyconverter
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.net.URL
 
@@ -26,95 +15,51 @@ class MainActivity : AppCompatActivity() {
     private var convertedCurrency = "USD"
     private var currencyRates = mutableMapOf<String, Double>()
 
-    private lateinit var fromCurrency: EditText
-    private lateinit var toCurrency: EditText
-
-    private var isUpdating = false
+    private lateinit var amountInput: EditText
+    private lateinit var resultText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        fromCurrency = findViewById(R.id.fromCurrency)
-        toCurrency = findViewById(R.id.toCurrency)
+        amountInput = findViewById(R.id.amountInput)
+        resultText = findViewById(R.id.resultText)
+        val convertButton: Button = findViewById(R.id.convertButton)
+        val swapButton: Button = findViewById(R.id.swapButton)
 
-        spinnerSetup()
-        setupTextWatchers()
-        fetchExchangeRates()
+        fetchExchangeRates() // Ambil data dari API
+
+        // Tombol untuk memicu konversi
+        convertButton.setOnClickListener {
+            if (amountInput.text.isNotEmpty()) {
+                convertCurrency() // Lakukan konversi jika input valid
+            } else {
+                Toast.makeText(this, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Tombol untuk menukar currency
+        swapButton.setOnClickListener {
+            swapCurrencies()
+        }
     }
 
-    private fun setupTextWatchers() {
-        fromCurrency.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                if (!isUpdating && s?.isNotEmpty() == true) {
-                    try {
-                        isUpdating = true
-                        convertFromBaseCurrency()
-                    } catch (e: Exception) {
-                        Log.e("Main", "Error converting from base: $e")
-                    } finally {
-                        isUpdating = false
-                    }
-                }
-            }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-
-        toCurrency.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                if (!isUpdating && s?.isNotEmpty() == true) {
-                    try {
-                        isUpdating = true
-                        convertToBaseCurrency()
-                    } catch (e: Exception) {
-                        Log.e("Main", "Error converting to base: $e")
-                    } finally {
-                        isUpdating = false
-                    }
-                }
-            }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-    }
-
-    @SuppressLint("DefaultLocale")
-    private fun convertFromBaseCurrency() {
+    @SuppressLint("SetTextI18n")
+    private fun convertCurrency() {
         if (baseCurrency == convertedCurrency) {
-            toCurrency.setText(fromCurrency.text.toString())
+            resultText.text = "${amountInput.text} $baseCurrency"
             return
         }
 
         try {
-            val input = fromCurrency.text.toString().toDouble()
+            val input = amountInput.text.toString().toDouble()
             val baseRate = currencyRates[baseCurrency] ?: return
             val targetRate = currencyRates[convertedCurrency] ?: return
 
             val result = (targetRate / baseRate) * input
-            toCurrency.setText(String.format("%.2f", result))
+            resultText.text = "%.2f $convertedCurrency".format(result)
         } catch (e: Exception) {
-            Log.e("Conversion", "Error converting from base: ${e.message}")
-        }
-    }
-
-    @SuppressLint("DefaultLocale")
-    private fun convertToBaseCurrency() {
-        if (baseCurrency == convertedCurrency) {
-            fromCurrency.setText(toCurrency.text.toString())
-            return
-        }
-
-        try {
-            val input = toCurrency.text.toString().toDouble()
-            val baseRate = currencyRates[baseCurrency] ?: return
-            val targetRate = currencyRates[convertedCurrency] ?: return
-
-            val result = (baseRate / targetRate) * input
-            fromCurrency.setText(String.format("%.2f", result))
-        } catch (e: Exception) {
-            Log.e("Conversion", "Error converting to base: ${e.message}")
+            Log.e("Conversion", "Error converting: ${e.message}")
         }
     }
 
@@ -123,26 +68,23 @@ class MainActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val API = "https://api.currencyfreaks.com/latest?apikey=a5ddf94800f54361a6d3ad1210b4658c"
-
                 val response = URL(API).readText()
                 val jsonObject = JSONObject(response)
-
                 val rates = jsonObject.getJSONObject("rates")
-                currencyRates.clear()
 
+                // Update nilai tukar ke dalam map
+                currencyRates.clear()
                 rates.keys().forEach { currency ->
                     currencyRates[currency] = rates.getDouble(currency)
                 }
 
+                val currencies = rates.keys().asSequence().toList()
+
                 withContext(Dispatchers.Main) {
-                    if (fromCurrency.text.isNotEmpty()) {
-                        convertFromBaseCurrency()
-                    } else if (toCurrency.text.isNotEmpty()) {
-                        convertToBaseCurrency()
-                    }
+                    updateCurrencySpinners(currencies) // Perbarui spinner
                 }
             } catch (e: Exception) {
-                Log.e("API", "Error fetching rate: ${e.message}")
+                Log.e("API", "Error fetching rates: ${e.message}")
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         applicationContext,
@@ -154,19 +96,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun spinnerSetup() {
+    private fun updateCurrencySpinners(currencies: List<String>) {
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, currencies)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
         val fromCurrencySpinner: Spinner = findViewById(R.id.fromCurrencySpinner)
         val toCurrencySpinner: Spinner = findViewById(R.id.toCurrencySpinner)
 
-        ArrayAdapter.createFromResource(
-            this,
-            R.array.currencies,
-            android.R.layout.simple_spinner_item
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            fromCurrencySpinner.adapter = adapter
-            toCurrencySpinner.adapter = adapter
-        }
+        fromCurrencySpinner.adapter = adapter
+        toCurrencySpinner.adapter = adapter
 
         fromCurrencySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -176,11 +114,6 @@ class MainActivity : AppCompatActivity() {
                 id: Long
             ) {
                 baseCurrency = parent?.getItemAtPosition(position).toString()
-                if (fromCurrency.text.isNotEmpty()) {
-                    convertFromBaseCurrency()
-                } else if (toCurrency.text.isNotEmpty()) {
-                    convertToBaseCurrency()
-                }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -194,14 +127,22 @@ class MainActivity : AppCompatActivity() {
                 id: Long
             ) {
                 convertedCurrency = parent?.getItemAtPosition(position).toString()
-                if (fromCurrency.text.isNotEmpty()) {
-                    convertFromBaseCurrency()
-                } else if (toCurrency.text.isNotEmpty()) {
-                    convertToBaseCurrency()
-                }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+    }
+
+    private fun swapCurrencies() {
+        val temp = baseCurrency
+        baseCurrency = convertedCurrency
+        convertedCurrency = temp
+
+        val fromSpinner: Spinner = findViewById(R.id.fromCurrencySpinner)
+        val toSpinner: Spinner = findViewById(R.id.toCurrencySpinner)
+
+        // Update posisi spinner
+        fromSpinner.setSelection((fromSpinner.adapter as ArrayAdapter<String>).getPosition(baseCurrency))
+        toSpinner.setSelection((toSpinner.adapter as ArrayAdapter<String>).getPosition(convertedCurrency))
     }
 }

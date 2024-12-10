@@ -4,74 +4,85 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="#FFD718"
+    tools:context=".MainActivity">
 
+    <!-- Title -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginBottom="32dp"
-        android:padding="20dp"
         android:text="@string/currency_converter"
         android:textSize="24sp"
-        android:textStyle="bold" />
+        android:textColor="@color/title_color"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
 
-    <LinearLayout
+    <!-- Spinner untuk Currency 1 -->
+    <Spinner
+        android:id="@+id/fromCurrencySpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/rounded_spinner"
+        android:padding="8dp" />
 
-        <EditText
-            android:id="@+id/fromCurrency"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:autofillHints=""
-            android:inputType="numberDecimal"
-            android:hint="@string/_0"
-            tools:text="@string/_0"
-            android:padding="8dp"
-            android:importantForAutofill="yes"
-            tools:ignore="VisualLintTextFieldSize" />
+    <!-- Tombol Swap -->
+    <Button
+        android:id="@+id/swapButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Swap"
+        android:textColor="@color/button_text"
+        android:background="@drawable/rounded_button"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp" />
 
-        <Spinner
-            android:id="@+id/fromCurrencySpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:padding="8dp"
-            tools:ignore="TouchTargetSizeCheck,VisualLintBounds" />
-
-    </LinearLayout>
-
-    <LinearLayout
+    <!-- Spinner untuk Currency 2 -->
+    <Spinner
+        android:id="@+id/toCurrencySpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/rounded_spinner"
+        android:padding="8dp" />
 
-        <EditText
-            android:id="@+id/toCurrency"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:autofillHints=""
-            android:inputType="numberDecimal"
-            android:hint="@string/_0"
-            tools:text="@string/_0"
-            android:padding="8dp"
-            android:importantForAutofill="yes"
-            tools:ignore="VisualLintTextFieldSize" />
+    <!-- Input Amount -->
+    <EditText
+        android:id="@+id/amountInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter amount"
+        android:padding="12dp"
+        android:background="@drawable/rounded_edittext"
+        android:inputType="numberDecimal"
+        android:textColor="@color/primary_text"
+        android:textSize="16sp"
+        android:textColorHint="@color/hint_text"
+        android:layout_marginBottom="16dp" />
 
-        <Spinner
-            android:id="@+id/toCurrencySpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:padding="8dp"
-            tools:ignore="TouchTargetSizeCheck,VisualLintBounds" />
+    <!-- Convert Button -->
+    <Button
+        android:id="@+id/convertButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Convert"
+        android:textColor="@color/button_text"
+        android:background="@drawable/rounded_button"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp" />
 
-    </LinearLayout>
-
+    <!-- Result Text -->
+    <TextView
+        android:id="@+id/resultText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Converted amount will appear here"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:textColor="@color/primary_text"
+        android:background="@drawable/rounded_textview"
+        android:padding="16dp" />
 </LinearLayout>
