@@ -15,5 +15,6 @@
         <item> CAD </item>
         <item> DKK </item>
         <item> SEK </item>
+        <item> IDR </item>
     </string-array>
 </resources>

@@ -1,11 +1,14 @@
 package com.example.currencyconverter
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.net.URL
@@ -26,22 +29,64 @@ class MainActivity : AppCompatActivity() {
         resultText = findViewById(R.id.resultText)
         val convertButton: Button = findViewById(R.id.convertButton)
         val swapButton: Button = findViewById(R.id.swapButton)
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+
+        bottomNavigationView.itemIconTintList = null
+
 
         fetchExchangeRates() // Ambil data dari API
 
-        // Tombol untuk memicu konversi
+
+
+        // Handle tombol convert
         convertButton.setOnClickListener {
             if (amountInput.text.isNotEmpty()) {
-                convertCurrency() // Lakukan konversi jika input valid
+                convertCurrency()
             } else {
                 Toast.makeText(this, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Tombol untuk menukar currency
+        // Handle tombol swap
         swapButton.setOnClickListener {
             swapCurrencies()
         }
+
+        // Handle navigasi bottom bar
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.navigation_note -> {
+                    val intent = Intent(this, NoteActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+                R.id.navigation_calculator -> {
+                    val intent = Intent(this, CalculatorActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+
+                R.id.navigation_history -> {
+                    val intent = Intent(this, HistoryActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+                R.id.navigation_chart -> {
+                    val intent = Intent(this, ChartActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+                else -> false
+            }
+        }
+
+    }
+
+    private fun loadFragment(fragment: Fragment): Boolean {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.mainContent, fragment)
+            .commit()
+        return true
     }
 
     @SuppressLint("SetTextI18n")
@@ -72,7 +117,6 @@ class MainActivity : AppCompatActivity() {
                 val jsonObject = JSONObject(response)
                 val rates = jsonObject.getJSONObject("rates")
 
-                // Update nilai tukar ke dalam map
                 currencyRates.clear()
                 rates.keys().forEach { currency ->
                     currencyRates[currency] = rates.getDouble(currency)
@@ -81,7 +125,7 @@ class MainActivity : AppCompatActivity() {
                 val currencies = rates.keys().asSequence().toList()
 
                 withContext(Dispatchers.Main) {
-                    updateCurrencySpinners(currencies) // Perbarui spinner
+                    updateCurrencySpinners(currencies)
                 }
             } catch (e: Exception) {
                 Log.e("API", "Error fetching rates: ${e.message}")
@@ -141,7 +185,6 @@ class MainActivity : AppCompatActivity() {
         val fromSpinner: Spinner = findViewById(R.id.fromCurrencySpinner)
         val toSpinner: Spinner = findViewById(R.id.toCurrencySpinner)
 
-        // Update posisi spinner
         fromSpinner.setSelection((fromSpinner.adapter as ArrayAdapter<String>).getPosition(baseCurrency))
         toSpinner.setSelection((toSpinner.adapter as ArrayAdapter<String>).getPosition(convertedCurrency))
     }
