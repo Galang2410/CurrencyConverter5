@@ -1,13 +1,13 @@
 package com.example.currencyconverter
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.*
 import org.json.JSONObject
@@ -29,14 +29,11 @@ class MainActivity : AppCompatActivity() {
         resultText = findViewById(R.id.resultText)
         val convertButton: Button = findViewById(R.id.convertButton)
         val swapButton: Button = findViewById(R.id.swapButton)
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
         bottomNavigationView.itemIconTintList = null
 
-
         fetchExchangeRates() // Ambil data dari API
-
-
 
         // Handle tombol convert
         convertButton.setOnClickListener {
@@ -52,41 +49,68 @@ class MainActivity : AppCompatActivity() {
             swapCurrencies()
         }
 
-        // Handle navigasi bottom bar
+        // Menampilkan elemen konversi secara default
+        if (savedInstanceState == null) {
+            showConversionElements()
+            bottomNavigationView.selectedItemId = R.id.navigation_convert
+        }
+
+        // Handle navigation item clicks
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_note -> {
-                    val intent = Intent(this, NoteActivity::class.java)
-                    startActivity(intent)
-                    true
+                    hideConversionElements()
+                    loadFragment(NoteFragment())
                 }
+
                 R.id.navigation_calculator -> {
-                    val intent = Intent(this, CalculatorActivity::class.java)
-                    startActivity(intent)
-                    true
+                    hideConversionElements()
+                    loadFragment(CalculatorFragment())
                 }
 
                 R.id.navigation_history -> {
-                    val intent = Intent(this, HistoryActivity::class.java)
-                    startActivity(intent)
-                    true
+                    hideConversionElements()
+                    loadFragment(HistoryFragment())
                 }
-                R.id.navigation_chart -> {
-                    val intent = Intent(this, ChartActivity::class.java)
-                    startActivity(intent)
-                    true
-                }
-                else -> false
-            }
-        }
 
+                R.id.navigation_chart -> {
+                    hideConversionElements()
+                    loadFragment(ChartFragment())
+                }
+
+                R.id.navigation_convert -> {
+                    // Pastikan elemen konversi muncul kembali
+                    supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                    showConversionElements()
+                }
+            }
+            true
+        }
     }
 
-    private fun loadFragment(fragment: Fragment): Boolean {
+    private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.mainContent, fragment)
+            .addToBackStack(null) // Tambahkan fragment ke backstack
             .commit()
-        return true
+    }
+
+    private fun hideConversionElements() {
+        amountInput.visibility = View.GONE
+        resultText.visibility = View.GONE
+        findViewById<Button>(R.id.convertButton).visibility = View.GONE
+        findViewById<Button>(R.id.swapButton).visibility = View.GONE
+        findViewById<Spinner>(R.id.fromCurrencySpinner).visibility = View.GONE
+        findViewById<Spinner>(R.id.toCurrencySpinner).visibility = View.GONE
+    }
+
+    private fun showConversionElements() {
+        amountInput.visibility = View.VISIBLE
+        resultText.visibility = View.VISIBLE
+        findViewById<Button>(R.id.convertButton).visibility = View.VISIBLE
+        findViewById<Button>(R.id.swapButton).visibility = View.VISIBLE
+        findViewById<Spinner>(R.id.fromCurrencySpinner).visibility = View.VISIBLE
+        findViewById<Spinner>(R.id.toCurrencySpinner).visibility = View.VISIBLE
     }
 
     @SuppressLint("SetTextI18n")
@@ -117,15 +141,19 @@ class MainActivity : AppCompatActivity() {
                 val jsonObject = JSONObject(response)
                 val rates = jsonObject.getJSONObject("rates")
 
+                // Daftar mata uang negara yang diinginkan
+                val desiredCurrencies = listOf("EUR", "USD", "VND", "AUD", "JPY", "CAD", "DKK", "SEK", "IDR")
+
+                // Filter data dari API
                 currencyRates.clear()
                 rates.keys().forEach { currency ->
-                    currencyRates[currency] = rates.getDouble(currency)
+                    if (currency in desiredCurrencies) {
+                        currencyRates[currency] = rates.getDouble(currency)
+                    }
                 }
 
-                val currencies = rates.keys().asSequence().toList()
-
                 withContext(Dispatchers.Main) {
-                    updateCurrencySpinners(currencies)
+                    updateCurrencySpinners(desiredCurrencies)
                 }
             } catch (e: Exception) {
                 Log.e("API", "Error fetching rates: ${e.message}")
@@ -189,3 +217,6 @@ class MainActivity : AppCompatActivity() {
         toSpinner.setSelection((toSpinner.adapter as ArrayAdapter<String>).getPosition(convertedCurrency))
     }
 }
+
+
+//update terakhir

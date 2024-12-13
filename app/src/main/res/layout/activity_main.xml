@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#EBEBEB"
     tools:context=".MainActivity">
 
@@ -14,27 +13,28 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="16dp"
-        android:layout_above="@id/bottomNavigationView">
+        android:layout_above="@id/bottom_navigation"
+        android:gravity="center_horizontal">
 
-        <!-- Title -->
+        <!-- Judul -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/currency_converter"
+            android:text="Converter"
             android:textSize="24sp"
-            android:textColor="#333333"
+            android:textColor="@color/primary_text"
             android:textStyle="bold"
             android:layout_marginBottom="16dp" />
 
-        <!-- Spinner untuk Currency 1 -->
+        <!-- Spinner untuk Mata Uang 1 -->
         <Spinner
             android:id="@+id/fromCurrencySpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/rounded_spinner"
-            android:padding="8dp" />
+            android:padding="10dp"
+            android:elevation="2dp" />
 
         <!-- Tombol Swap -->
         <Button
@@ -44,20 +44,22 @@
             android:layout_gravity="center"
             android:text="Swap"
             android:textColor="#FFFFFF"
-            android:background="@drawable/rounded_button"
+            android:backgroundTint="#1D87DB"
             android:padding="8dp"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp"
+            android:elevation="4dp" />
 
-        <!-- Spinner untuk Currency 2 -->
+        <!-- Spinner untuk Mata Uang 2 -->
         <Spinner
             android:id="@+id/toCurrencySpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:background="@drawable/rounded_spinner"
-            android:padding="8dp" />
+            android:padding="10dp"
+            android:elevation="2dp" />
 
-        <!-- Input Amount -->
+        <!-- Input Jumlah -->
         <EditText
             android:id="@+id/amountInput"
             android:layout_width="match_parent"
@@ -71,18 +73,19 @@
             android:textColorHint="#757575"
             android:layout_marginBottom="16dp" />
 
-        <!-- Convert Button -->
+        <!-- Tombol Convert -->
         <Button
             android:id="@+id/convertButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Convert"
             android:textColor="#FFFFFF"
-            android:background="@drawable/rounded_button"
+            android:backgroundTint="#1D87DB"
             android:padding="12dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:elevation="4dp" />
 
-        <!-- Result Text -->
+        <!-- Teks Hasil -->
         <TextView
             android:id="@+id/resultText"
             android:layout_width="match_parent"
@@ -92,21 +95,19 @@
             android:gravity="center"
             android:textColor="#333333"
             android:background="@drawable/rounded_textview"
-            android:padding="16dp" />
+            android:padding="16dp"
+            android:elevation="2dp" />
     </LinearLayout>
 
-    <!-- Bottom Navigation View -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
+        android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         app:menu="@menu/bottom_nav_menu"
         android:background="#FFFFFF"
         app:itemTextColor="#1D87DB"
-
         app:itemIconTint="@null"
         app:labelVisibilityMode="labeled"
         app:itemRippleColor="@android:color/transparent" />
-
 </RelativeLayout>
